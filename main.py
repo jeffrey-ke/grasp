@@ -2,6 +2,7 @@ import os
 import pdb
 from argparse import ArgumentParser
 from pathlib import Path
+import time
 
 import numpy as np
 from xarm.wrapper import XArmAPI
@@ -26,9 +27,10 @@ class XArmController:
         """
         Saves the current position of the xarm to a npz file with key "qpos"
         """
-        qpos = self.arm.get_position()[1]
+        raise NotImplementedError("There's a bug in this function with how qpos and pose are set.")
+        qpos = self.arm.get_position()[1] # the same??
         pose = self.arm.get_position()[1]
-        r, p, y = pose[3:]
+        r, p, y = pose[3:] 
         x, y, z = pose[:3]
         ee_pose = np.array([x, y, z, r, p, y])
         np.savez(qpos_file, qpos=qpos, ee_pose=ee_pose)
@@ -240,10 +242,10 @@ if __name__ == "__main__":
 
     experiment_id = input("Input name of the folder with the grasps")
     results_path = Path.cwd() / "results" / f"{experiment_id}.txt"
-    for grasp in grasp_loader.read_grasps_from(Path.cwd() / "grasps" / f"{experiment_id}")
+    for grasp in grasp_loader.read_grasps_from(Path.cwd() / "grasps" / f"{experiment_id}"):
         input(f"Hit Enter when you have placed {grasp.object_name} at location [x,y,z] {grasp.object_xyz} meters from arm base")
         move the arm to align the hand frame to what's specified in object_rpy'
         leap_hand.interpolate_move(grasp.leap_qpos)
         success = 1 if input("Enter 1 for success, other for failure: ") == "1" else 0
         with open(results_path, "a") as file:
-            file.write(f"Grasp {grasp.grasp_id}: {success}")
+            file.write(f"Grasp {grasp.grasp_id}: {success}\n")

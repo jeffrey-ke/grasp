@@ -12,8 +12,6 @@ def read_grasps_from(folder_path):
     files = []
     if not os.path.exists(folder_path):
         raise FileNotFoundError(f"{folder_path} does not exist!")
-    else:
-        folder_path = Path.cwd() / folder_path / id
     for item in os.listdir(folder_path):
         file_path = os.path.join(folder_path, item)
         if os.path.isfile(file_path):
