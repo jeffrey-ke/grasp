@@ -1,10 +1,13 @@
-from xarm.wrapper import XArmAPI
+import os
+import pdb
+from argparse import ArgumentParser
+
 import numpy as np
+from xarm.wrapper import XArmAPI
 
 from leap_hand_utils.dynamixel_client import *
 import leap_hand_utils.leap_hand_utils as lhu
-import os
-import pdb
+import grasp_loader
 
 class XArmController:
     def __init__(self, ip, pose_dir="./xarm_poses"):
@@ -224,95 +227,19 @@ class LeapNode:
 
 
 if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument("--result-folder", type=str, default="results")
+    args = parser.parse_args()
 
     xarm_controller = XArmController("192.168.1.241")
-    # xarm_controller.move_ee_pose(np.array([400, 6.3, 150, 180 ,0, 0]))
-    # object_height = 150
-    # qpos = np.array([0.1060,  0.0244, -0.0842,  1.2666, -1.0907,  0.8831,  0.7941,  0.3491,
-    #      0.1341,  1.2199,  1.1833, -0.0529,  0.2620,  1.2789,  1.2669, -0.4548,
-    #      0.3866,  0.8570,  2.0940,  2.4430, -1.2000,  0.2983])
-    # natural_leap_pose = np.array([3.3916316, 4.948622, 3.4729326, 2.5301, -1.2483,  2.2305,
-    #                          3.4867384, 3.9684083, 3.342544, 4.713923, 3.3318062, 3.7383113,
-    #                          4.402525, 3.2244277, 3.3854957, 3.5511656])
-    # R_object_to_robot = np.array([[-1, 0,  0],
-    #         [ 0, 0,  1],
-    #         [ 0, 1,  0]])
-    # xarm_controller = XArmController("192.168.1.248")
     leap_hand = LeapNode()
     initial_leap_pose = lhu.allegro_to_LEAPhand(np.zeros(16), zeros=False)
-
     leap_hand.interpolate_move(initial_leap_pose)
     time.sleep(5)
-    # for i in range(1):
-    #     # move to the START position for xarm and leap
-    #     print(xarm_controller.arm.get_position()[1])
-    #     xarm_controller.move_ee_pose(np.array([250, 6.3, object_height, 180, 0, 0]))
-    #     xarm_controller.move_ee_pose(np.array([400, 6.3, object_height+150, 180, 0, 0]))
-    #     leap_hand.interpolate_move(initial_leap_pose)
-    #     time.sleep(1)
 
-    #     # move to the START orientation
-    #     orientation = R_object_to_robot @ qpos[3:6] * (180 / np.pi)
-    #     xarm_controller.move_ee_pose(np.array([400, 6.3, object_height+150, orientation[0], orientation[1], orientation[2]]))
-    #     time.sleep(1)
-
-    #     # orientation = R_object_to_robot @ qpos[3:6] * (180 / np.pi)
-    #     # xarm_controller.move_ee_pose(np.array([400, 6.3, -70, orientation[0], orientation[1], orientation[2]]))
-    #     # time.sleep(1)
-
-    #     # move to the OBJECT position
-    #     # xarm_controller.move_ee_delta_pos(np.array([100, 0, 0, 0, 0, 0]))
-    #     # time.sleep(1)
-
-    #     # move to the OBJECT position
-    #     delta_pos = R_object_to_robot @ qpos[:3] * 1000
-    #     xarm_controller.move_ee_delta_pos(np.array([delta_pos[0]+100, delta_pos[1]+120, delta_pos[2], 0, 0, 0]))
-    #     time.sleep(1)
-
-    #     # # LEAP hand grasp the object
-    #     real_pose = lhu.LEAPsim_to_LEAPhand(qpos[6:])
-    #     leap_hand.interpolate_move(real_pose)
-    #     time.sleep(5)
-
-    #     # back to the leap hand neutral position
-    #     leap_hand.interpolate_move(initial_leap_pose)
-    #     time.sleep(1)
-    #     # back to the START position and orientation
-    #     xarm_controller.move_ee_pose(np.array([400, 6.3, object_height, 180, 0, 0]))
-    #     time.sleep(2)
-
-    #     leap_hand.interpolate_move(natural_leap_pose)
-    #     time.sleep(2)
-
-    #     xarm_controller.move_ee_pose(np.array([200, 6.3, -51, 180, 0, 0]))
-    #     time.sleep(2)
-
-
-    # try:
-    #     import pygame
-    # except:
-    #     print("keyboard module not found. Please install it using 'pip install keyboard'.")
-    #     exit(0)
-
-    # # Initialize pygame
-    # pygame.init()
-
-    # # Create a small window (needed for capturing events)
-    # screen = pygame.display.set_mode((200, 100))
-    # pygame.display.set_caption("Key Listener")
-
-    # print("Press keys (press 'q' to quit)...")
-
-    # running = True
-    # while running:
-    #     for event in pygame.event.get():
-    #         if event.type == pygame.KEYDOWN:
-    #             key_name = pygame.key.name(event.key)
-    #             print(f"You pressed: {key_name}")
-    #             if key_name == 'q':
-    #                 running = False
-    #         elif event.type == pygame.QUIT:
-    #             running = False
-
-    # pygame.quit()
-
+    experiment_id = input("Input name of the folder with the grasps")
+    results_path = Path.cwd() / "results" / f"{experiment_id}"
+    for grasp in grasp_loader.read_grasps_from(Path.cwd() / "grasps" / f"{experiment_id}")
+        input(f"Hit Enter when you have placed {grasp.object_name} at location [x,y,z] {grasp.object_xyz} meters from arm base")
+        move the arm to align the hand frame to what's specified in object_rpy
+        leap_hand.interpolate_move(grasp.leap_qpos)
