@@ -1,6 +1,7 @@
 import os
 import pdb
 from argparse import ArgumentParser
+from pathlib import Path
 
 import numpy as np
 from xarm.wrapper import XArmAPI
@@ -238,8 +239,11 @@ if __name__ == "__main__":
     time.sleep(5)
 
     experiment_id = input("Input name of the folder with the grasps")
-    results_path = Path.cwd() / "results" / f"{experiment_id}"
+    results_path = Path.cwd() / "results" / f"{experiment_id}.txt"
     for grasp in grasp_loader.read_grasps_from(Path.cwd() / "grasps" / f"{experiment_id}")
         input(f"Hit Enter when you have placed {grasp.object_name} at location [x,y,z] {grasp.object_xyz} meters from arm base")
-        move the arm to align the hand frame to what's specified in object_rpy
+        move the arm to align the hand frame to what's specified in object_rpy'
         leap_hand.interpolate_move(grasp.leap_qpos)
+        success = 1 if input("Enter 1 for success, other for failure: ") == "1" else 0
+        with open(results_path, "a") as file:
+            file.write(f"Grasp {grasp.grasp_id}: {success}")
