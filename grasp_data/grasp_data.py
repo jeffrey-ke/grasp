@@ -7,3 +7,4 @@ class GraspInfo:
     leap_qpos: list[float]
     object_name: str
     robot_name: str
+    grasp_id: int

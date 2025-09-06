@@ -1,6 +1,8 @@
 import os
 import sys
 import warnings
+from pathlib import Path
+
 import numpy as np
 import torch
 
@@ -8,6 +10,10 @@ from grasp_data import GraspInfo
 
 def read_grasps_from(folder_path):
     files = []
+    if not os.path.exists(folder_path):
+        raise FileNotFoundError(f"{folder_path} does not exist!")
+    else:
+        folder_path = Path.cwd() / folder_path / id
     for item in os.listdir(folder_path):
         file_path = os.path.join(folder_path, item)
         if os.path.isfile(file_path):
@@ -28,4 +34,5 @@ def read_grasps_from(folder_path):
                     leap_qpos=q[6:],
                     object_name=object_name,
                     robot_name=robot_name,
+                    grasp_id=i,
             )
